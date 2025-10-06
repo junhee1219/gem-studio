@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #message {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>회원가입</h1>
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="nickname">닉네임</label>
+                <input type="nickname" id="nickname" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">회원가입</button>
+        </form>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        document.getElementById("signupForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // 폼 기본 제출 방지
+
+            // 'FormData'를 사용해 폼 데이터 전체를 가져옵니다.
+            // event.target은 이벤트가 발생한 요소, 즉 <form> 태그를 가리킵니다.
+            const formData = new FormData(event.target);
+
+            // FormData는 바로 JSON으로 변환할 수 없으므로, 일반 객체로 먼저 변환합니다.
+            // Object.fromEntries()는 [key, value] 쌍의 목록을 객체로 바꿔줍니다.
+            const data = Object.fromEntries(formData.entries());
+
+            const messageElement = document.getElementById("message");
+            messageElement.textContent = "";
+            messageElement.className = "";
+
+            try {
+                const response = await fetch("/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    // 변환된 데이터 객체를 JSON 문자열로 만들어 전송합니다.
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageElement.textContent = result.message;
+                    messageElement.classList.add("success");
+                } else {
+                    messageElement.textContent = result.detail || "오류가 발생했습니다.";
+                    messageElement.classList.add("error");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                messageElement.textContent = "서버와 통신 중 오류가 발생했습니다.";
+                messageElement.classList.add("error");
+            }
+        });
+    </script>
+</body>
+</html>
