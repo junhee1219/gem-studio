@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if mode == 'new' %}새 프로필 만들기{% else %}작업 상세 보기{% endif %}</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #007bff; }
+        .form-section { margin-bottom: 1.5rem; }
+        .form-section h2 { font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input[type="text"], input[type="color"], select, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input[type="file"] { border: 1px solid #ccc; border-radius: 4px; padding: 0.5rem; }
+        .radio-group label { display: inline-block; margin-right: 1rem; }
+        .notice { font-size: 0.9rem; color: #666; margin-top: 0.5rem; }
+        .submit-btn { display: block; width: 100%; padding: 1rem; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; }
+        .submit-btn:hover { background-color: #0056b3; }
+        .readonly-section { background-color: #f9f9f9; padding: 1rem; border-radius: 5px; }
+        .readonly-section img { max-width: 100%; height: auto; border-radius: 5px; margin-top: 1rem; }
+
+        @media (max-width: 768px) {
+            .container { margin: 1rem; padding: 1rem; }
+            h1 { font-size: 1.5rem; }
+            .radio-group label { display: block; margin-bottom: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{% if mode == 'new' %}새 프로필 만들기{% else %}작업 상세 보기 (ID: {{ job.id }}){% endif %}</h1>
+
+        <form action="/jobs" method="post" enctype="multipart/form-data" {% if mode != 'new' %}style="display:none;"{% endif %}>
+            
+            <div class="form-section">
+                <h2>사진 업로드</h2>
+                <div class="form-group">
+                    <label for="face_photo">얼굴 사진 (필수)</label>
+                    <input type="file" id="face_photo" name="face_photo" accept="image/*" required>
+                    <p class="notice">얼굴이 선명하게 나온 사진을 업로드해주세요.</p>
+                </div>
+                <div class="form-group">
+                    <label for="item_photos">의상/소품 사진 (선택)</label>
+                    <input type="file" id="item_photos" name="item_photos" accept="image/*" multiple>
+                    <p class="notice">원하는 의상, 악세사리, 소품 사진을 업로드하세요. 상품만 명확하게 나온 사진일수록 결과가 좋습니다.</p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>프로필 설정</h2>
+                <div class="form-group">
+                    <label>구도</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="shot_type" value="full_body" checked> 전신</label>
+                        <label><input type="radio" name="shot_type" value="upper_body"> 상반신</label>
+                        <label><input type="radio" name="shot_type" value="face"> 얼굴만</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="background">배경</label>
+                    <select id="background" name="background">
+                        <option value="monotone">모노톤</option>
+                        <option value="river">강</option>
+                        <option value="beach">해안가</option>
+                        <option value="cafe">카페</option>
+                        <option value="office">사무실</option>
+                        <option value="park">공원</option>
+                    </select>
+                    <input type="color" name="background_color" value="#ffffff" style="margin-top: 0.5rem;">
+                    <p class="notice">모노톤 선택 시, 아래에서 색상을 지정할 수 있습니다.</p>
+                </div>
+                <div class="form-group">
+                    <label>조명</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="lighting" value="natural" checked> 자연광</label>
+                        <label><input type="radio" name="lighting" value="studio"> 스튜디오광</label>
+                        <label><input type="radio" name="lighting" value="warm_tone"> 따뜻한 톤</label>
+                        <label><input type="radio" name="lighting" value="cool_tone"> 차가운 톤</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>표정</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="expression" value="smile" checked> 미소</label>
+                        <label><input type="radio" name="expression" value="half_smile"> 반미소</label>
+                        <label><input type="radio" name="expression" value="neutral"> 무표정</label>
+                        <label><input type="radio" name="expression" value="laugh"> 자연스러운 웃음</label>
+                        <label><input type="radio" name="expression" value="confident"> 자신감 있는 표정</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>느낌</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="mood" value="casual" checked> 캐주얼</label>
+                        <label><input type="radio" name="mood" value="formal"> 포멀</label>
+                        <label><input type="radio" name="mood" value="friendly"> 친근한</label>
+                        <label><input type="radio" name="mood" value="professional"> 프로페셔널</label>
+                        <label><input type="radio" name="mood" value="gentle"> 상냥한</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">프로필 생성 요청</button>
+        </form>
+
+        {% if mode == 'read' %}
+        <div class="readonly-section">
+            <h2>요청 정보</h2>
+            <p><strong>상태:</strong> {{ job.status }}</p>
+            
+            <h3>설정</h3>
+            <ul>
+            {% for detail in details %}
+                <li><strong>{{ detail.opt_key }}:</strong> {{ detail.opt_value }}</li>
+            {% endfor %}
+            </ul>
+
+            <h3>입력 이미지</h3>
+            {% for url in job.input_urls %}
+                <img src="{{ url }}" alt="Input image" width="200">
+            {% endfor %}
+            
+            {% if job.status == 'COMPLETED' %}
+            <h2>결과물</h2>
+            {% for url in job.output_urls %}
+                <img src="{{ url }}" alt="Output image" width="400">
+            {% endfor %}
+            {% elif job.status == 'FAILED' %}
+            <h2>오류</h2>
+            <p>{{ job.error_msg }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

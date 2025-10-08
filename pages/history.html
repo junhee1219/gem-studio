@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포인트 내역</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #007bff; }
+        .balance { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; }
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table th, .history-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+        .history-table th { background-color: #f9f9f9; }
+        .delta-plus { color: green; }
+        .delta-minus { color: red; }
+        .back-link { display: inline-block; margin-top: 2rem; color: #007bff; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .container { margin: 1rem; padding: 1rem; }
+            h1 { font-size: 1.5rem; }
+            .history-table th, .history-table td { padding: 0.75rem; }
+            .balance { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>포인트 내역</h1>
+        <div class="balance">💎{{ coin_balance }}</div>
+
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th>내용</th>
+                    <th>변동</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in history %}
+                <tr>
+                    <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ item.reason }}</td>
+                    <td class="{% if item.delta > 0 %}delta-plus{% else %}delta-minus{% endif %}">{{ item.delta }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 2rem;">포인트 내역이 없습니다.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="/" class="back-link">&larr; 대시보드로 돌아가기</a>
+    </div>
+</body>
+</html>

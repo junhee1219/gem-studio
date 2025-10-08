@@ -1,19 +1,18 @@
 from fastapi import APIRouter, HTTPException, Response, Depends, Cookie
-import psycopg2
-
+from fastapi import Request
 from models.user import UserCreate, UserLogin
 from settings import supabase
-from common.page import html_page
+from common.templates import templates
 from session_store import session_store
 from common.security import get_current_user
-from db import get_db_conn # psycopg2 연결 함수 임포트
+from db import get_db_conn
 
 router = APIRouter(tags=["auth"])
 
 
 @router.get("/signup")
 def get_signup_page():
-    return html_page("sign_up.html")
+    return templates.TemplateResponse("sign_up.html")
 
 
 @router.post("/signup")
@@ -56,8 +55,8 @@ def sign_up(user: UserCreate, conn = Depends(get_db_conn)):
 
 
 @router.get("/login")
-def get_login_page():
-    return html_page("login.html")
+def get_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
 @router.post("/login")
 def login(user: UserLogin, response: Response):
