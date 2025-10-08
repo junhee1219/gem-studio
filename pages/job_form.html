@@ -12,19 +12,47 @@
         .form-section h2 { font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
         .form-group { margin-bottom: 1rem; }
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        input[type="text"], input[type="color"], select, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        input[type="file"] { border: 1px solid #ccc; border-radius: 4px; padding: 0.5rem; }
-        .radio-group label { display: inline-block; margin-right: 1rem; }
+        input[type="text"], select, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input:disabled, select:disabled, input[type="radio"]:disabled, label:has(input:disabled) { background-color: #eee; cursor: not-allowed; opacity: 0.7; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 0 1rem; align-items: center; }
+        .radio-group label { margin-right: 0; /* gap property handles spacing */ }
         .notice { font-size: 0.9rem; color: #666; margin-top: 0.5rem; }
+        
+        /* Custom File Upload */
+        .file-upload-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .file-upload-slot {
+            width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        fieldset:not([disabled]) .file-upload-slot:hover { border-color: #007bff; }
+        .file-upload-slot .plus-icon { font-size: 3rem; color: #ccc; }
+        .file-upload-slot .thumbnail { width: 100%; height: 100%; object-fit: cover; }
+        .file-upload-slot .remove-btn { 
+            position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.5); 
+            color: white; border: none; border-radius: 50%; width: 20px; height: 20px; 
+            cursor: pointer; display: none; align-items: center; justify-content: center; 
+        }
+        fieldset:not([disabled]) .file-upload-slot:hover .remove-btn { display: flex; }
+        input[type="file"].is-hidden { display: none; }
+
+        /* Color Swatches */
+        #color-selector { margin-top: 0.5rem; display: none; }
+        .color-swatches { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .color-swatch-label { cursor: pointer; }
+        .color-swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        input[type="radio"]:checked + .color-swatch-label .color-swatch { border-color: #007bff; }
+
         .submit-btn { display: block; width: 100%; padding: 1rem; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; }
         .submit-btn:hover { background-color: #0056b3; }
-        .readonly-section { background-color: #f9f9f9; padding: 1rem; border-radius: 5px; }
-        .readonly-section img { max-width: 100%; height: auto; border-radius: 5px; margin-top: 1rem; }
+        .results-section { margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #eee; }
+        .results-section h2 { text-align: center; }
+        .image-gallery { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+        .image-gallery img { max-width: 100%; height: auto; border-radius: 5px; max-height: 400px; }
 
         @media (max-width: 768px) {
             .container { margin: 1rem; padding: 1rem; }
             h1 { font-size: 1.5rem; }
-            .radio-group label { display: block; margin-bottom: 0.5rem; }
         }
     </style>
 </head>
@@ -32,107 +60,203 @@
     <div class="container">
         <h1>{% if mode == 'new' %}새 프로필 만들기{% else %}작업 상세 보기 (ID: {{ job.id }}){% endif %}</h1>
 
-        <form action="/jobs" method="post" enctype="multipart/form-data" {% if mode != 'new' %}style="display:none;"{% endif %}>
-            
-            <div class="form-section">
-                <h2>사진 업로드</h2>
-                <div class="form-group">
-                    <label for="face_photo">얼굴 사진 (필수)</label>
-                    <input type="file" id="face_photo" name="face_photo" accept="image/*" required>
-                    <p class="notice">얼굴이 선명하게 나온 사진을 업로드해주세요.</p>
+        <form action="/jobs" method="post" enctype="multipart/form-data">
+            <fieldset {% if mode == 'read' %}disabled{% endif %}>
+                <div class="form-section">
+                    <h2>사진 업로드</h2>
+                    <div class="form-group">
+                        <label>얼굴 사진 (필수)</label>
+                        <div class="file-upload-group">
+                            <div class="file-upload-slot" id="face-photo-slot">
+                                {% if mode == 'read' and job.input_urls[0] %}
+                                    <img src="{{ job.input_urls[0] }}" class="thumbnail">
+                                {% else %}
+                                    <span class="plus-icon">+</span>
+                                    <input type="file" id="face_photo" name="face_photo" class="is-hidden" accept="image/*" required>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>의상/소품 사진 (선택, 최대 3개)</label>
+                        <div class="file-upload-group">
+                            <div class="file-upload-slot" id="item-photo-slot-1">
+                                {% if mode == 'read' and job.input_urls[1] %}
+                                    <img src="{{ job.input_urls[1] }}" class="thumbnail">
+                                {% else %}
+                                    <span class="plus-icon">+</span>
+                                    <input type="file" id="item_photo_1" name="item_photo_1" class="is-hidden" accept="image/*">
+                                {% endif %}
+                            </div>
+                            <div class="file-upload-slot" id="item-photo-slot-2">
+                                {% if mode == 'read' and job.input_urls[2] %}
+                                    <img src="{{ job.input_urls[2] }}" class="thumbnail">
+                                {% else %}
+                                    <span class="plus-icon">+</span>
+                                    <input type="file" id="item_photo_2" name="item_photo_2" class="is-hidden" accept="image/*">
+                                {% endif %}
+                            </div>
+                            <div class="file-upload-slot" id="item-photo-slot-3">
+                                {% if mode == 'read' and job.input_urls[3] %}
+                                    <img src="{{ job.input_urls[3] }}" class="thumbnail">
+                                {% else %}
+                                    <span class="plus-icon">+</span>
+                                    <input type="file" id="item_photo_3" name="item_photo_3" class="is-hidden" accept="image/*">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="item_photos">의상/소품 사진 (선택)</label>
-                    <input type="file" id="item_photos" name="item_photos" accept="image/*" multiple>
-                    <p class="notice">원하는 의상, 악세사리, 소품 사진을 업로드하세요. 상품만 명확하게 나온 사진일수록 결과가 좋습니다.</p>
-                </div>
-            </div>
 
-            <div class="form-section">
-                <h2>프로필 설정</h2>
-                <div class="form-group">
-                    <label>구도</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="shot_type" value="full_body" checked> 전신</label>
-                        <label><input type="radio" name="shot_type" value="upper_body"> 상반신</label>
-                        <label><input type="radio" name="shot_type" value="face"> 얼굴만</label>
+                <div class="form-section">
+                    <h2>프로필 설정</h2>
+                    <div class="form-group">
+                        <label>구도</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="shot_type" value="full_body" {% if job_options.shot_type == 'full_body' or not job_options.shot_type %}checked{% endif %}> 전신</label>
+                            <label><input type="radio" name="shot_type" value="upper_body" {% if job_options.shot_type == 'upper_body' %}checked{% endif %}> 상반신</label>
+                            <label><input type="radio" name="shot_type" value="face" {% if job_options.shot_type == 'face' %}checked{% endif %}> 얼굴만</label>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="background">배경</label>
-                    <select id="background" name="background">
-                        <option value="monotone">모노톤</option>
-                        <option value="river">강</option>
-                        <option value="beach">해안가</option>
-                        <option value="cafe">카페</option>
-                        <option value="office">사무실</option>
-                        <option value="park">공원</option>
-                    </select>
-                    <input type="color" name="background_color" value="#ffffff" style="margin-top: 0.5rem;">
-                    <p class="notice">모노톤 선택 시, 아래에서 색상을 지정할 수 있습니다.</p>
-                </div>
-                <div class="form-group">
-                    <label>조명</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="lighting" value="natural" checked> 자연광</label>
-                        <label><input type="radio" name="lighting" value="studio"> 스튜디오광</label>
-                        <label><input type="radio" name="lighting" value="warm_tone"> 따뜻한 톤</label>
-                        <label><input type="radio" name="lighting" value="cool_tone"> 차가운 톤</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>표정</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="expression" value="smile" checked> 미소</label>
-                        <label><input type="radio" name="expression" value="half_smile"> 반미소</label>
-                        <label><input type="radio" name="expression" value="neutral"> 무표정</label>
-                        <label><input type="radio" name="expression" value="laugh"> 자연스러운 웃음</label>
-                        <label><input type="radio" name="expression" value="confident"> 자신감 있는 표정</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>느낌</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="mood" value="casual" checked> 캐주얼</label>
-                        <label><input type="radio" name="mood" value="formal"> 포멀</label>
-                        <label><input type="radio" name="mood" value="friendly"> 친근한</label>
-                        <label><input type="radio" name="mood" value="professional"> 프로페셔널</label>
-                        <label><input type="radio" name="mood" value="gentle"> 상냥한</label>
-                    </div>
-                </div>
-            </div>
+                    <div class="form-group">
+                        <label for="background">배경</label>
+                        <select id="background" name="background">
+                            <option value="monotone" {% if job_options.background == 'monotone' %}selected{% endif %}>모노톤</option>
+                            <option value="river" {% if job_options.background == 'river' %}selected{% endif %}>강</option>
+                            <option value="beach" {% if job_options.background == 'beach' %}selected{% endif %}>해안가</option>
+                            <option value="cafe" {% if job_options.background == 'cafe' %}selected{% endif %}>카페</option>
+                            <option value="office" {% if job_options.background == 'office' %}selected{% endif %}>사무실</option>
+                            <option value="park" {% if job_options.background == 'park' %}selected{% endif %}>공원</option>
+                        </select>
+                        <div id="color-selector">
+                            <p class="notice">모노톤 배경 색상을 선택하세요.</p>
+                            <div class="color-swatches">
+                                <input type="radio" name="background_color" value="#000000" id="color_black" class="is-hidden" {% if job_options.background_color == '#000000' %}checked{% endif %}>
+                                <label for="color_black" class="color-swatch-label"><div class="color-swatch" style="background-color: #000000;"></div></label>
+                                
+                                <input type="radio" name="background_color" value="#FFFFFF" id="color_white" class="is-hidden" {% if job_options.background_color == '#FFFFFF' or not job_options.background_color %}checked{% endif %}>
+                                <label for="color_white" class="color-swatch-label"><div class="color-swatch" style="background-color: #FFFFFF;"></div></label>
 
+                                <input type="radio" name="background_color" value="#808080" id="color_gray" class="is-hidden" {% if job_options.background_color == '#808080' %}checked{% endif %}>
+                                <label for="color_gray" class="color-swatch-label"><div class="color-swatch" style="background-color: #808080;"></div></label>
+
+                                <input type="radio" name="background_color" value="#FF0000" id="color_red" class="is-hidden" {% if job_options.background_color == '#FF0000' %}checked{% endif %}>
+                                <label for="color_red" class="color-swatch-label"><div class="color-swatch" style="background-color: #FF0000;"></div></label>
+
+                                <input type="radio" name="background_color" value="#0000FF" id="color_blue" class="is-hidden" {% if job_options.background_color == '#0000FF' %}checked{% endif %}>
+                                <label for="color_blue" class="color-swatch-label"><div class="color-swatch" style="background-color: #0000FF;"></div></label>
+
+                                <input type="radio" name="background_color" value="#008000" id="color_green" class="is-hidden" {% if job_options.background_color == '#008000' %}checked{% endif %}>
+                                <label for="color_green" class="color-swatch-label"><div class="color-swatch" style="background-color: #008000;"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>조명</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="lighting" value="natural" {% if job_options.lighting == 'natural' or not job_options.lighting %}checked{% endif %}> 자연광</label>
+                            <label><input type="radio" name="lighting" value="studio" {% if job_options.lighting == 'studio' %}checked{% endif %}> 스튜디오광</label>
+                            <label><input type="radio" name="lighting" value="warm_tone" {% if job_options.lighting == 'warm_tone' %}checked{% endif %}> 따뜻한 톤</label>
+                            <label><input type="radio" name="lighting" value="cool_tone" {% if job_options.lighting == 'cool_tone' %}checked{% endif %}> 차가운 톤</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>표정</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="expression" value="smile" {% if job_options.expression == 'smile' or not job_options.expression %}checked{% endif %}> 미소</label>
+                            <label><input type="radio" name="expression" value="half_smile" {% if job_options.expression == 'half_smile' %}checked{% endif %}> 반미소</label>
+                            <label><input type="radio" name="expression" value="neutral" {% if job_options.expression == 'neutral' %}checked{% endif %}> 무표정</label>
+                            <label><input type="radio" name="expression" value="laugh" {% if job_options.expression == 'laugh' %}checked{% endif %}> 자연스러운 웃음</label>
+                            <label><input type="radio" name="expression" value="confident" {% if job_options.expression == 'confident' %}checked{% endif %}> 자신감 있는 표정</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>느낌</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="mood" value="casual" {% if job_options.mood == 'casual' or not job_options.mood %}checked{% endif %}> 캐주얼</label>
+                            <label><input type="radio" name="mood" value="formal" {% if job_options.mood == 'formal' %}checked{% endif %}> 포멀</label>
+                            <label><input type="radio" name="mood" value="friendly" {% if job_options.mood == 'friendly' %}checked{% endif %}> 친근한</label>
+                            <label><input type="radio" name="mood" value="professional" {% if job_options.mood == 'professional' %}checked{% endif %}> 프로페셔널</label>
+                            <label><input type="radio" name="mood" value="gentle" {% if job_options.mood == 'gentle' %}checked{% endif %}> 상냥한</label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            {% if mode == 'new' %}
             <button type="submit" class="submit-btn">프로필 생성 요청</button>
-        </form>
-
-        {% if mode == 'read' %}
-        <div class="readonly-section">
-            <h2>요청 정보</h2>
-            <p><strong>상태:</strong> {{ job.status }}</p>
-            
-            <h3>설정</h3>
-            <ul>
-            {% for detail in details %}
-                <li><strong>{{ detail.opt_key }}:</strong> {{ detail.opt_value }}</li>
-            {% endfor %}
-            </ul>
-
-            <h3>입력 이미지</h3>
-            {% for url in job.input_urls %}
-                <img src="{{ url }}" alt="Input image" width="200">
-            {% endfor %}
-            
-            {% if job.status == 'COMPLETED' %}
-            <h2>결과물</h2>
-            {% for url in job.output_urls %}
-                <img src="{{ url }}" alt="Output image" width="400">
-            {% endfor %}
-            {% elif job.status == 'FAILED' %}
-            <h2>오류</h2>
-            <p>{{ job.error_msg }}</p>
             {% endif %}
-        </div>
-        {% endif %}
+        </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Background color selector logic
+            const backgroundSelect = document.getElementById('background');
+            const colorSelector = document.getElementById('color-selector');
+
+            function toggleColorSelector() {
+                if (backgroundSelect.value === 'monotone') {
+                    colorSelector.style.display = 'block';
+                } else {
+                    colorSelector.style.display = 'none';
+                }
+            }
+
+            backgroundSelect.addEventListener('change', toggleColorSelector);
+            toggleColorSelector(); // Initial check on page load
+
+            // Custom file upload logic
+            function setupFileUpload(slotId) {
+                const slot = document.getElementById(slotId);
+                if (!slot) return;
+                const input = slot.querySelector('input[type="file"]');
+                
+                slot.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-btn') || input.disabled) return;
+                    input.click();
+                });
+
+                input.addEventListener('change', () => {
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            // Clear previous thumbnail/icon
+                            const prevThumb = slot.querySelector('.thumbnail');
+                            if(prevThumb) prevThumb.remove();
+                            const prevIcon = slot.querySelector('.plus-icon');
+                            if(prevIcon) prevIcon.remove();
+                            const prevRemove = slot.querySelector('.remove-btn');
+                            if(prevRemove) prevRemove.remove();
+
+                            const thumb = document.createElement('img');
+                            thumb.src = e.target.result;
+                            thumb.className = 'thumbnail';
+                            slot.appendChild(thumb);
+
+                            const removeBtn = document.createElement('button');
+                            removeBtn.className = 'remove-btn';
+                            removeBtn.innerHTML = '&times;';
+                            removeBtn.type = 'button';
+                            removeBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                input.value = ''; // Clear the file input
+                                slot.innerHTML = '<span class="plus-icon">+</span>';
+                            };
+                            slot.appendChild(removeBtn);
+                        };
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                });
+            }
+
+            if (document.querySelector('fieldset:not([disabled])')) {
+                setupFileUpload('face-photo-slot');
+                setupFileUpload('item-photo-slot-1');
+                setupFileUpload('item-photo-slot-2');
+                setupFileUpload('item-photo-slot-3');
+            }
+        });
+    </script>
 </body>
 </html>

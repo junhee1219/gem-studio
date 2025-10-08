@@ -30,7 +30,7 @@ def get_dashboard(request: Request, user: dict | None = Depends(try_get_current_
             # 코인 잔액 조회
             cur.execute(
                 "SELECT SUM(delta) FROM public.point_history WHERE auth_user_id = %s",
-                (uuid.UUID(user_id),)
+                (user_id,)
             )
             balance_row = cur.fetchone()
             if balance_row and balance_row[0] is not None:
@@ -39,7 +39,7 @@ def get_dashboard(request: Request, user: dict | None = Depends(try_get_current_
             # 작업 목록 조회
             cur.execute(
                 "SELECT id, status, output_urls FROM public.jobs WHERE auth_user_id = %s ORDER BY created_at DESC",
-                (uuid.UUID(user_id),)
+                (user_id,)
             )
             all_jobs = cur.fetchall()
 
