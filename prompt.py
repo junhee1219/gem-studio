@@ -56,3 +56,15 @@ Negative Constraints:
 - changed identity (different person), mismatched age/gender
 - text or logos in the image
 """
+
+
+# 밑에껀 넣을지 말지 고민..
+"""
+CANDID DIRECTION:
+- Not an ID/mugshot. Capture a candid, lifestyle moment as if someone else photographed the subject mid-action.
+- Subject does NOT look into the camera; use off-camera gaze or a slight downward glance.
+- Natural posture with a small action (e.g., adjusting sleeves, walking, using a laptop/phone, holding a coffee); relaxed shoulders, asymmetrical stance.
+- Composition: rule-of-thirds, slight angle (30–45°) rather than straight-on; allow negative space and partial crop when natural.
+- Depth: shallow depth of field; background softly blurred but keep {배경} context recognizable.
+- Motion: permit subtle background motion blur; keep the face/eyes crisp and in focus.
+"""
