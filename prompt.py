@@ -1,5 +1,17 @@
 PROMPT_TMPL = """Create a high-quality professional profile photo.
 
+IDENTITY LOCK (HIGHEST PRIORITY — STRICT):
+- Reproduce the SAME PERSON as in the FIRST image. Do NOT invent or mix a new person.
+- Preserve facial landmarks and ratios within very small tolerance:
+  eyes spacing, eye shape/size, nose width/bridge/tip shape, lip shape, jawline, cheekbones, chin length, hairline.
+- Preserve skin undertone and permanent marks (moles/freckles) and age/gender cues.
+- Allowed beautification = subtle only:
+  even skin tone (+slightly brighter exposure), light blemish cleanup, slightly sharper eyes, gentle jawline definition.
+- FORBIDDEN changes:
+  iris color, hairstyle length or hairline shift, face morphing beyond ~3% scale/ratio change,
+  nose/eye reshaping, lip resizing, age regression/progression, gender change.
+- If identity cannot be preserved with high confidence, DO NOT generate a different face; RETURN a failure.
+
 INPUT IMAGES:
 - Main subject: the FIRST uploaded image (this is the person to render).
 - Optional props: up to 3 additional images containing clothing or accessories. If provided, transfer only the outfit/accessory design to the main subject. Do not change the face identity based on prop images.
