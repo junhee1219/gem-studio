@@ -17,9 +17,6 @@ def get_signup_page():
 
 @router.post("/signup")
 def sign_up(user: UserCreate, conn = Depends(get_db_conn)):
-    """
-    Supaase Auth와 psycopg2 직접 DB 연결을 사용하는 회원가입 예시입니다.
-    """
     try:
         with conn.cursor() as cur:
             # 1. 먼저 DB에 해당 이메일로 가입된 프로필이 있는지 확인 (SQL 인젝션 방지)
